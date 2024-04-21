@@ -4,28 +4,10 @@ volumes:
   api_data:
   pg_data:
 
-
-
 services:
-  app:
-    container_name: app
-    build:
-      context: ./
-      dockerfile: Dockerfile
-    env_file:
-      - ./.env 
-    ports:
-      - "8000:8000" 
-    depends_on:
-      - db:
-          condition: service_healthy 
-    volumes:
-      - api_data:/bitnami/api
-    restart: always
-
   db:
     container_name: postgres
-    image: postgres:latest
+    image: postgres:14
     env_file:
       - ./.env
     volumes:
@@ -37,4 +19,18 @@ services:
       timeout: 5s
       retries: 5
 
-  
+  app:
+    container_name: app
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy  # Ensures the database starts before the FastAPI service
+    volumes:
+      - api_data:/bitnami/api
+    restart: always
