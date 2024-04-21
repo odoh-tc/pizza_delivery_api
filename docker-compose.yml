@@ -1,0 +1,40 @@
+version: '3.8'
+
+volumes:
+  api_data:
+  pg_data:
+
+
+
+services:
+  app:
+    container_name: app
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env 
+    ports:
+      - "8000:8000" 
+    depends_on:
+      - db:
+          condition: service_healthy 
+    volumes:
+      - api_data:/bitnami/api
+    restart: always
+
+  db:
+    container_name: postgres
+    image: postgres:latest
+    env_file:
+      - ./.env
+    volumes:
+      - pg_data:/bitnami/postgres
+    restart: always
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  
